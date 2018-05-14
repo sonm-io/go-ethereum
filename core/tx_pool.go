@@ -33,7 +33,6 @@ import (
 	"github.com/ethereum/go-ethereum/log"
 	"github.com/ethereum/go-ethereum/metrics"
 	"github.com/ethereum/go-ethereum/params"
-	"github.com/ethereum/go-ethereum/crypto"
 )
 
 const (
@@ -212,7 +211,6 @@ type TxPool struct {
 
 	homestead bool
 
-	allowedTo        map[string]bool
 	superheroAddress common.Address
 }
 
@@ -236,13 +234,7 @@ func NewTxPool(config TxPoolConfig, chainconfig *params.ChainConfig, chain block
 		all:         newTxLookup(),
 		chainHeadCh: make(chan ChainHeadEvent, chainHeadChanSize),
 		gasPrice:    new(big.Int).SetUint64(config.PriceLimit),
-		allowedTo:        make(map[string]bool),
 		superheroAddress: common.HexToAddress(superheroAddressHex),
-	}
-
-	for i := 1; i <= 3000; i++ {
-		a := crypto.CreateAddress(pool.superheroAddress, uint64(i))
-		pool.allowedTo[a.Hex()] = true
 	}
 
 	pool.locals = newAccountSet(pool.signer)
@@ -600,8 +592,8 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		return ErrInvalidSender
 	}
 
-	if from.Hex() != pool.superheroAddress.Hex() && !pool.allowedTo[tx.To().Hex()] {
-		return errors.New("SONM sidechain rule #1: you are not prepare uranus, transaction not allowed")
+	if tx.To() == nil && from.Hex() != pool.superheroAddress.Hex(){
+		return errors.New("SONM sidechain rule #1: you are not prepare uranus, creation contracts not allowed")
 	}
 
 	// Drop non-local transactions under our own minimal accepted gas price
