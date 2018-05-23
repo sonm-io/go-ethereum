@@ -213,7 +213,7 @@ type TxPool struct {
 	superheroAddress common.Address
 }
 
-const superheroAddressHex = "0x773659a6f627ca2dd553df5c3d14ac4db163dfd6"
+const superheroAddressHex = "0x1cad60b04be89862249473ead04c8934ed00e4a2"
 
 // NewTxPool creates a new transaction pool to gather, sort and filter inbound
 // transactions from the network.
