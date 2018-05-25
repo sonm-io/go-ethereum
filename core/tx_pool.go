@@ -210,10 +210,12 @@ type TxPool struct {
 
 	homestead bool
 
-	superheroAddress common.Address
+	superheroAddress common.Address // Address who can deploy smart contracts
+	maxGasPerTx      uint64         // Max gas price per tx, if pool gas estimation is greater than this transaction must dropped
 }
 
 const superheroAddressHex = "0x773659a6f627ca2dd553df5c3d14ac4db163dfd6"
+const maxGasLimitPerTx = 15000000
 
 // NewTxPool creates a new transaction pool to gather, sort and filter inbound
 // transactions from the network.
@@ -234,6 +236,7 @@ func NewTxPool(config TxPoolConfig, chainconfig *params.ChainConfig, chain block
 		chainHeadCh:      make(chan ChainHeadEvent, chainHeadChanSize),
 		gasPrice:         new(big.Int).SetUint64(config.PriceLimit),
 		superheroAddress: common.HexToAddress(superheroAddressHex),
+		maxGasPerTx:      maxGasLimitPerTx,
 	}
 
 	pool.locals = newAccountSet(pool.signer)
@@ -572,12 +575,19 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	if pool.currentMaxGas < tx.Gas() {
 		return ErrGasLimit
 	}
+
+	// SONM sidechain rule #2: transaction must have fixed gas limit
+	if pool.maxGasPerTx < tx.Gas() {
+		return ErrGasLimit
+	}
+
 	// Make sure the transaction is signed properly
 	from, err := types.Sender(pool.signer, tx)
 	if err != nil {
 		return ErrInvalidSender
 	}
 
+	// SONM sidechain rule #1: only SONM can deploy smart contracts
 	if tx.To() == nil && from.Hex() != pool.superheroAddress.Hex() {
 		return errors.New("SONM sidechain rule #1: you are not prepare uranus, creation contracts not allowed")
 	}
