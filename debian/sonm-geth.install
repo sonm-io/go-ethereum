@@ -1,0 +1,2 @@
+build/bin/geth usr/bin
+build/geth.service.example usr/share/geth
