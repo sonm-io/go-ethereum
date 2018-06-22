@@ -1,0 +1,14 @@
+Source: sonm-geth
+Section: misc
+Priority: optional
+Maintainer: ALex Nikonov <alex@sshaman.ru>
+Build-Depends: debhelper (>= 9), dh-systemd
+Standards-Version: 3.9.8
+Homepage: https://github.com/sonm-io/go-ethereum
+Vcs-Git: https://github.com/sonm-io/go-ethereum.git
+Vcs-Browser: https://github.com/sonm-io/go-ethereum
+
+Package: sonm-geth
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Geth node with modifications for SONM Blockchain

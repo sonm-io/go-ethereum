@@ -1,0 +1,18 @@
+#!/usr/bin/make -f
+#export DH_VERBOSE = 1
+
+%:
+	dh $@
+
+override_dh_auto_build:
+	build/env.sh true
+	${GO_COMPILLER} run build/ci.go install ./cmd/geth
+
+override_dh_auto_test:
+	echo "skip tests"
+
+override_dh_systemd_start:
+	echo "Not running dh_systemd_start"
+
+override_dh_auto_clean:
+	dh_auto_clean
