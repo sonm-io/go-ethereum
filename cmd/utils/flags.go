@@ -289,6 +289,11 @@ var (
 		Usage: "Maximum amount of time non-executable transaction are queued",
 		Value: eth.DefaultConfig.TxPool.Lifetime,
 	}
+	TxPoolAllowedContractPublishersFlag = cli.StringFlag{
+		Name:  "txpool.allowedaccountpublishers",
+		Usage: "A list of account addresses that are allowed to publish contracts",
+		Value: "",
+	}
 	// Performance tuning settings
 	CacheFlag = cli.IntFlag{
 		Name:  "cache",
@@ -937,6 +942,14 @@ func setTxPool(ctx *cli.Context, cfg *core.TxPoolConfig) {
 	}
 	if ctx.GlobalIsSet(TxPoolLifetimeFlag.Name) {
 		cfg.Lifetime = ctx.GlobalDuration(TxPoolLifetimeFlag.Name)
+	}
+	if ctx.GlobalIsSet(TxPoolAllowedContractPublishersFlag.Name) {
+		contracts := strings.Split(ctx.GlobalString(TxPoolAllowedContractPublishersFlag.Name), ",")
+		for _, contract := range contracts {
+			if common.IsHexAddress(contract) {
+				cfg.AllowedContractPublishers[common.HexToAddress(contract)] = true
+			}
+		}
 	}
 }
 
