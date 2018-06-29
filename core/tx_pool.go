@@ -132,10 +132,11 @@ type TxPoolConfig struct {
 	PriceLimit uint64 // Minimum gas price to enforce for acceptance into the pool
 	PriceBump  uint64 // Minimum price bump percentage to replace an already existing transaction (nonce)
 
-	AccountSlots uint64 // Minimum number of executable transaction slots guaranteed per account
-	GlobalSlots  uint64 // Maximum number of executable transaction slots for all accounts
-	AccountQueue uint64 // Maximum number of non-executable transaction slots permitted per account
-	GlobalQueue  uint64 // Maximum number of non-executable transaction slots for all accounts
+	AccountSlots              uint64                  // Minimum number of executable transaction slots guaranteed per account
+	GlobalSlots               uint64                  // Maximum number of executable transaction slots for all accounts
+	AccountQueue              uint64                  // Maximum number of non-executable transaction slots permitted per account
+	GlobalQueue               uint64                  // Maximum number of non-executable transaction slots for all accounts
+	AllowedContractPublishers map[common.Address]bool // A set of contract addresses that have a permission to publish contracts
 
 	Lifetime time.Duration // Maximum amount of time non-executable transaction are queued
 }
@@ -155,6 +156,9 @@ var DefaultTxPoolConfig = TxPoolConfig{
 	GlobalQueue:  1024,
 
 	Lifetime: 3 * time.Hour,
+	AllowedContractPublishers: map[common.Address]bool{
+		common.HexToAddress("0x1cad60b04be89862249473ead04c8934ed00e4a2"): true,
+	},
 }
 
 // sanitize checks the provided user configurations and changes anything that's
@@ -212,11 +216,9 @@ type TxPool struct {
 
 	homestead bool
 
-	superheroAddress common.Address // Address who can deploy smart contracts
-	maxGasPerTx      uint64         // Max gas price per tx, if pool gas estimation is greater than this transaction must dropped
+	maxGasPerTx uint64 // Max gas price per tx, if pool gas estimation is greater than this transaction must dropped
 }
 
-const superheroAddressHex = "0x1cad60b04be89862249473ead04c8934ed00e4a2"
 const maxGasLimitPerTx = 15000000
 
 // NewTxPool creates a new transaction pool to gather, sort and filter inbound
@@ -227,18 +229,17 @@ func NewTxPool(config TxPoolConfig, chainconfig *params.ChainConfig, chain block
 
 	// Create the transaction pool with its initial settings
 	pool := &TxPool{
-		config:           config,
-		chainconfig:      chainconfig,
-		chain:            chain,
-		signer:           types.NewEIP155Signer(chainconfig.ChainId),
-		pending:          make(map[common.Address]*txList),
-		queue:            make(map[common.Address]*txList),
-		beats:            make(map[common.Address]time.Time),
-		all:              make(map[common.Hash]*types.Transaction),
-		chainHeadCh:      make(chan ChainHeadEvent, chainHeadChanSize),
-		gasPrice:         new(big.Int).SetUint64(config.PriceLimit),
-		superheroAddress: common.HexToAddress(superheroAddressHex),
-		maxGasPerTx:      maxGasLimitPerTx,
+		config:      config,
+		chainconfig: chainconfig,
+		chain:       chain,
+		signer:      types.NewEIP155Signer(chainconfig.ChainId),
+		pending:     make(map[common.Address]*txList),
+		queue:       make(map[common.Address]*txList),
+		beats:       make(map[common.Address]time.Time),
+		all:         make(map[common.Hash]*types.Transaction),
+		chainHeadCh: make(chan ChainHeadEvent, chainHeadChanSize),
+		gasPrice:    new(big.Int).SetUint64(config.PriceLimit),
+		maxGasPerTx: maxGasLimitPerTx,
 	}
 
 	pool.locals = newAccountSet(pool.signer)
@@ -587,7 +588,8 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		return ErrInvalidSender
 	}
 
-	if tx.To() == nil && from.Hex() != pool.superheroAddress.Hex() {
+	if tx.To() == nil && !pool.config.AllowedContractPublishers[from] {
+		log.Info("Unauthorized contract creation attempt from ", "contract", from.String())
 		return errors.New("SONM sidechain rule #1: contracts creation not allowed")
 	}
 
