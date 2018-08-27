@@ -289,6 +289,22 @@ var (
 		Usage: "Maximum amount of time non-executable transaction are queued",
 		Value: eth.DefaultConfig.TxPool.Lifetime,
 	}
+	// Sonm extensions settings
+	SonmDWHEndpointFlag = cli.StringFlag{
+		Name:  "sonm.dwhendpoint",
+		Usage: "Address of the SONM DWH geth sould use",
+		Value: eth.DefaultConfig.Sonm.DWHEndpoint,
+	}
+	SonmKeypathFlag = cli.StringFlag{
+		Name:  "sonm.keypath",
+		Usage: "Path of the SONM key to use",
+		Value: eth.DefaultConfig.Sonm.KeyPath,
+	}
+	SonmKeypassFlag = cli.StringFlag{
+		Name:  "sonm.keypass",
+		Usage: "Password of SONM key",
+		Value: eth.DefaultConfig.Sonm.KeyPass,
+	}
 	// Performance tuning settings
 	CacheFlag = cli.IntFlag{
 		Name:  "cache",
@@ -940,6 +956,18 @@ func setTxPool(ctx *cli.Context, cfg *core.TxPoolConfig) {
 	}
 }
 
+func setSonmExtensions(ctx *cli.Context, cfg *core.SonmConfig) {
+	if ctx.GlobalIsSet(SonmDWHEndpointFlag.Name) {
+		cfg.DWHEndpoint = ctx.GlobalString(SonmDWHEndpointFlag.Name)
+	}
+	if ctx.GlobalIsSet(SonmKeypathFlag.Name) {
+		cfg.KeyPath = ctx.GlobalString(SonmKeypathFlag.Name)
+	}
+	if ctx.GlobalIsSet(SonmKeypassFlag.Name) {
+		cfg.KeyPass = ctx.GlobalString(SonmKeypassFlag.Name)
+	}
+}
+
 func setEthash(ctx *cli.Context, cfg *eth.Config) {
 	if ctx.GlobalIsSet(EthashCacheDirFlag.Name) {
 		cfg.Ethash.CacheDir = ctx.GlobalString(EthashCacheDirFlag.Name)
@@ -1021,6 +1049,7 @@ func SetEthConfig(ctx *cli.Context, stack *node.Node, cfg *eth.Config) {
 	setEtherbase(ctx, ks, cfg)
 	setGPO(ctx, &cfg.GPO)
 	setTxPool(ctx, &cfg.TxPool)
+	setSonmExtensions(ctx, &cfg.Sonm)
 	setEthash(ctx, cfg)
 
 	switch {

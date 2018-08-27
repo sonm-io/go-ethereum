@@ -126,6 +126,14 @@ var AppHelpFlagGroups = []flagGroup{
 		},
 	},
 	{
+		Name: "SONM EXTENSIONS",
+		Flags: []cli.Flag{
+			utils.SonmDWHEndpointFlag,
+			utils.SonmKeypathFlag,
+			utils.SonmKeypassFlag,
+		},
+	},
+	{
 		Name: "PERFORMANCE TUNING",
 		Flags: []cli.Flag{
 			utils.CacheFlag,

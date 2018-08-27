@@ -214,6 +214,8 @@ type TxPool struct {
 
 	superheroAddress common.Address // Address who can deploy smart contracts
 	maxGasPerTx      uint64         // Max gas price per tx, if pool gas estimation is greater than this transaction must dropped
+
+	Sonm SonmExtension // Extensions for QoS in the SONM sidechain
 }
 
 const superheroAddressHex = "0x1cad60b04be89862249473ead04c8934ed00e4a2"
@@ -452,6 +454,10 @@ func (pool *TxPool) Stop() {
 	if pool.journal != nil {
 		pool.journal.close()
 	}
+	if pool.Sonm != nil {
+		pool.Sonm.Stop()
+	}
+
 	log.Info("Transaction pool stopped")
 }
 
@@ -989,7 +995,7 @@ func (pool *TxPool) promoteExecutables(accounts []common.Address) {
 		spammers := prque.New()
 		for addr, list := range pool.pending {
 			// Only evict transactions from high rollers
-			if !pool.locals.contains(addr) && uint64(list.Len()) > pool.config.AccountSlots {
+			if !pool.locals.contains(addr) && uint64(list.Len()) > pool.Sonm.AccountSlots(addr) {
 				spammers.Push(addr, float32(list.Len()))
 			}
 		}

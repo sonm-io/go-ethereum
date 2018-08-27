@@ -118,6 +118,9 @@ var (
 		utils.GpoBlocksFlag,
 		utils.GpoPercentileFlag,
 		utils.ExtraDataFlag,
+		utils.SonmDWHEndpointFlag,
+		utils.SonmKeypathFlag,
+		utils.SonmKeypassFlag,
 		configFileFlag,
 	}
 
