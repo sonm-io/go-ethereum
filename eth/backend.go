@@ -164,6 +164,11 @@ func New(ctx *node.ServiceContext, config *Config) (*Ethereum, error) {
 		config.TxPool.Journal = ctx.ResolvePath(config.TxPool.Journal)
 	}
 	eth.txPool = core.NewTxPool(config.TxPool, eth.chainConfig, eth.blockchain)
+	s, err := core.NewSonmExtension(config.Sonm)
+	if err != nil {
+		log.Warn("Failed to init SONM extensions", "err", err.Error())
+	}
+	eth.txPool.Sonm = s
 
 	if eth.protocolManager, err = NewProtocolManager(eth.chainConfig, config.SyncMode, config.NetworkId, eth.eventMux, eth.txPool, eth.engine, eth.blockchain, chainDb); err != nil {
 		return nil, err

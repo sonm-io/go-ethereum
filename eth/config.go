@@ -51,6 +51,7 @@ var DefaultConfig = Config{
 	GasPrice:      big.NewInt(18 * params.Shannon),
 
 	TxPool: core.DefaultTxPoolConfig,
+	Sonm:   core.DefaultSonmConfig,
 	GPO: gasprice.Config{
 		Blocks:     20,
 		Percentile: 60,
@@ -105,6 +106,9 @@ type Config struct {
 
 	// Transaction pool options
 	TxPool core.TxPoolConfig
+
+	// SONM extensions
+	Sonm core.SonmConfig
 
 	// Gas Price Oracle options
 	GPO gasprice.Config
