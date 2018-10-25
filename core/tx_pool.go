@@ -576,8 +576,8 @@ func (pool *TxPool) local() map[common.Address]types.Transactions {
 // rules and adheres to some heuristic limits of the local node (price and size).
 func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 
-	// Heuristic limit, reject transactions over 32KB to prevent DOS attacks
-	if tx.Size() > 32*1024 {
+	// Heuristic limit, reject transactions over 256KB to prevent DOS attacks
+	if tx.Size() > 256*1024 {
 		return ErrOversizedData
 	}
 	// Transactions can't be negative. This may never happen using RLP decoded
@@ -590,9 +590,9 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 		return ErrGasLimit
 	}
 	// SONM sidechain rule #2: transaction must have fixed gas limit
-	if pool.maxGasPerTx < tx.Gas() {
-		return ErrGasLimit
-	}
+	// if pool.maxGasPerTx < tx.Gas() {
+	// 	return ErrGasLimit
+	// }
 	// Make sure the transaction is signed properly
 	from, err := types.Sender(pool.signer, tx)
 	if err != nil {
