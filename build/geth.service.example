@@ -1,0 +1,22 @@
+[Unit]
+Description=Geth node
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=10s
+
+
+ExecStart=/usr/bin/geth --mine --metrics \
+                        --datadir /root/gsnm/ --networkid 444 \
+                        --nat=extip:MACHINE_EXTERNAL_IP --port 30303 \
+                        --ethstats NAME_OF_YOUR_MACHINE:sonmlivenet@blockchain-monitor.sonm.com:443 \
+                        --cache 10000 --maxpeers 2048 --targetgaslimit 100000000 --gasprice 0 \
+                        --etherbase=0xYOU_ETH_ADDRESS \
+                        --unlock 0xYOU_ETH_ADDRESS \
+                        --password /PATH/TO/PASSWORD/FILE \
+                        --bootnodes="enode://494849da925034bde2d29496f046971af62bc2b88b451389433dac48dbf3278a031811071839ed21e7ea0c942fe39e3bba5101b687cf1d92246ca7822132d095@51.38.65.245:30303,enode://511e7c3c3bf922e84a32a038fd81fe7d26759956d46fcaad75c3ab800fcc8b69e018716f52ddd2f32228b2e5f8607b4488948a07c60da6f35d1f80418569b424@78.155.203.154:30303,enode://313ed6aaad433e909e8624c824bd27ecbc54d606368da5eb97bdc4cfb449933dbeac2099ad8b93b8a6fc246e7bcdf46bb3b9aa1d9e403f4241ce11f239fd6f58@185.186.244.93:30303"
+
+[Install]
+WantedBy=default.target
