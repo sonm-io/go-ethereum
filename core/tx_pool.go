@@ -589,10 +589,6 @@ func (pool *TxPool) validateTx(tx *types.Transaction, local bool) error {
 	if pool.currentMaxGas < tx.Gas() {
 		return ErrGasLimit
 	}
-	// SONM sidechain rule #2: transaction must have fixed gas limit
-	if pool.maxGasPerTx < tx.Gas() {
-		return ErrGasLimit
-	}
 	// Make sure the transaction is signed properly
 	from, err := types.Sender(pool.signer, tx)
 	if err != nil {
